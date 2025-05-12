@@ -1,0 +1,188 @@
+<div class="container mx-auto p-6 bg-gray-50 shadow-md rounded-lg">
+
+  <div *ngIf="cargando" class="flex items-center justify-center mb-4">
+    <mat-progress-spinner mode="indeterminate" color="primary" diameter="40">
+    </mat-progress-spinner>
+  </div>
+
+  <h2 class="text-2xl font-bold text-gray-800 mb-4">{{ titulo }}</h2>
+
+<form [formGroup]="formFiltros" class="flex flex-wrap gap-4 items-end mb-6">
+  <mat-form-field appearance="fill">
+    <mat-label>Sucursal</mat-label>
+    <mat-select formControlName="SucursalID">
+      <mat-option value="">Todas</mat-option>
+      <mat-option *ngFor="let sucursal of sucursales" [value]="sucursal.sucursalID">
+        {{ primeraLetraEnMayuscula(sucursal.descripcion) }}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field appearance="fill">
+    <mat-label>Rango de fechas</mat-label>
+    <mat-date-range-input [formGroup]="formFiltros" [rangePicker]="picker">
+      <input matStartDate formControlName="FechaInicio" placeholder="Inicio" />
+      <input matEndDate formControlName="FechaFinal" placeholder="Final" />
+    </mat-date-range-input>
+    <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+    <mat-date-range-picker #picker></mat-date-range-picker>
+  </mat-form-field>
+
+  <button mat-flat-button color="primary" type="button" (click)="aplicarFiltros()"
+    class="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 disabled:bg-gray-300"
+  >
+    Aplicar filtros
+  </button>
+</form>
+
+
+  <app-listado-generico [listado]="entidades">
+    <ng-container contenido>
+      <table
+        mat-table
+        [dataSource]="entidades"
+        class="mat-elevation-z8 indice-elementos"
+      >
+        <ng-container *ngFor="let columna of columnasAMostrar">
+          <ng-container *ngIf="columna === 'acciones'; else checkEstado">
+            <ng-container matColumnDef="acciones">
+              <th
+                mat-header-cell
+                *matHeaderCellDef
+                class="bg-gray-200 text-center px-4 py-2 font-semibold"
+              >
+                Acciones
+              </th>
+              <td
+                class="px-4 py-2 border-b border-gray-300"
+                mat-cell
+                *matCellDef="let elemento"
+              >
+                <button
+                  mat-icon-button
+                  color="warn"
+                  class="ml-2"
+                  aria-label="Bloquear"
+                  (click)="openConfirmDialog(elemento[campoID])"
+                >
+                  <mat-icon>edit</mat-icon>
+                </button>
+                
+              </td>
+            </ng-container>
+          </ng-container>
+
+          <ng-template #checkEstado>
+            <ng-container
+              *ngIf="columna === 'estado'; else fechaCampo"
+            >
+              <ng-container matColumnDef="estado">
+                <th
+                  class="bg-gray-200 text-center px-4 py-2 font-semibold"
+                  mat-header-cell
+                  *matHeaderCellDef
+                >
+                  Estado
+                </th>
+                <td
+                  class="px-4 py-2 border-b border-gray-300"
+                  mat-cell
+                  *matCellDef="let elemento"
+                >
+                  <ng-container *ngIf="elemento[columna] === 'E'"
+                    >Enviado a Sucursal</ng-container
+                  >
+                  <ng-container *ngIf="elemento[columna] === 'R'"
+                    >Recibo en Sucursal</ng-container
+                  >
+                </td>
+              </ng-container>
+            </ng-container>
+          </ng-template>
+
+          <ng-template #fechaCampo>
+            <ng-container
+              *ngIf="columna === 'fecha'; else fechaRecibe"
+            >
+              <ng-container matColumnDef="fecha">
+                <th
+                  class="bg-gray-200 text-center px-4 py-2 font-semibold"
+                  mat-header-cell
+                  *matHeaderCellDef
+                >
+                  Fecha
+                </th>
+                <td
+                  class="px-4 py-2 border-b border-gray-300"
+                  mat-cell
+                  *matCellDef="let elemento"
+                >
+                  {{ elemento.fecha | date: 'dd/MM/yyyy hh:mm a' }}
+                </td>
+              </ng-container>
+            </ng-container>
+          </ng-template>
+
+          <ng-template #fechaRecibe>
+            <ng-container
+              *ngIf="columna === 'fechaRecibido'; else defaultColumn"
+            >
+              <ng-container matColumnDef="fechaRecibido">
+                <th
+                  class="bg-gray-200 text-center px-4 py-2 font-semibold"
+                  mat-header-cell
+                  *matHeaderCellDef
+                >
+                  Fecha Recibida
+                </th>
+                <td
+                  class="px-4 py-2 border-b border-gray-300"
+                  mat-cell
+                  *matCellDef="let elemento"
+                >
+                  {{ elemento.fechaRecibido | date: 'dd/MM/yyyy hh:mm a' }}
+                </td>
+              </ng-container>
+            </ng-container>
+          </ng-template>
+
+          <ng-template #defaultColumn>
+            <ng-container matColumnDef="{{ columna }}">
+              <th
+                class="bg-gray-200 text-center px-4 py-2 font-semibold"
+                mat-header-cell
+                *matHeaderCellDef
+              >
+                {{ obtenerTituloColumna(columna) }}
+              </th>
+              <td
+                class="px-4 py-2 border-b border-gray-300"
+                mat-cell
+                *matCellDef="let elemento"
+              >
+                {{ primeraLetraEnMayuscula(elemento[columna]) }}
+              </td>
+            </ng-container>
+          </ng-template>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="columnasAMostrar"></tr>
+        <tr
+          mat-row
+          *matRowDef="let row; columns: columnasAMostrar"
+          class="odd:bg-gray-100 even:bg-gray-200 hover:bg-blue-50 cursor-pointer"
+        ></tr>
+      </table>
+
+      <mat-paginator
+        showFirstLastButtons
+        [length]="cantidadTotalRegistros"
+        [pageIndex]="paginacion.PageNumber - 1"
+        [pageSize]="paginacion.PageSize"
+        [pageSizeOptions]="[5, 10, 50]"
+        class="mat-elevation-z8"
+        (page)="actualizarPaginacion($event)"
+      ></mat-paginator>
+    </ng-container>
+  </app-listado-generico>
+</div>

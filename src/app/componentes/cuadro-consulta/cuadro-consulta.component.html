@@ -1,0 +1,28 @@
+<div class="p-6">
+  <h1
+    mat-dialog-title
+    class="text-xl font-bold text-gray-800 border-b border-gray-300 pb-2 text-center"
+  >
+    {{ data.title }}
+  </h1>
+  <div mat-dialog-content class="mt-4 text-gray-600 text-sm text-center">
+    <p>{{ data.text }}</p>
+  </div>
+  <div mat-dialog-actions class="mt-6 flex justify-center space-x-2">
+    <button
+      mat-button
+      class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded hover:bg-gray-400 transition duration-200"
+      (click)="onCancel()"
+    >
+      Cancelar
+    </button>
+    <button
+      mat-button
+      class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded hover:bg-blue-700 transition duration-200"
+      color="primary"
+      (click)="onConfirm()"
+    >
+      Aceptar
+    </button>
+  </div>
+</div>

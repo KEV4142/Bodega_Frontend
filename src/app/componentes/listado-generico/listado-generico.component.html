@@ -1,0 +1,30 @@
+@if (!listado) {
+<div #cargando>
+  <ng-content select="[cargando]"></ng-content>
+</div>
+
+    @if(!cargando.innerHTML.trim()){
+    <div class="text-center py-4">
+      <mat-progress-spinner
+        mode="indeterminate"
+        diameter="40"
+        strokeWidth="4"
+        color="primary"
+      ></mat-progress-spinner>
+    </div>
+    } 
+} 
+@else if (listado.length === 0) {
+    <div #vacio>
+    <ng-content select="[vacio]"></ng-content>
+    </div>
+
+    @if(!vacio.innerHTML.trim()){
+        <div class="w-full flex items-center justify-center h-40 bg-gray-100 text-gray-500 text-lg rounded-lg">
+        <p>No hay elementos para mostrar</p>
+        </div>
+    } 
+} 
+@else {
+<ng-content select="[contenido]"></ng-content>
+}

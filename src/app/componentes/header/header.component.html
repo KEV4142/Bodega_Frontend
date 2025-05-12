@@ -1,0 +1,37 @@
+<mat-toolbar color="primary" class="p-4">
+    <div class="flex justify-between items-center w-full">
+      <span class="text-xl font-bold">
+        Bienvenido, <span class="text-blue-600">{{ usuario }}</span>
+      </span>
+  
+      <button mat-icon-button *ngIf="isSmallScreen" [matMenuTriggerFor]="menu">
+        <mat-icon>menu</mat-icon>
+      </button>
+  
+      <nav *ngIf="!isSmallScreen" class="flex">
+        <ul class="flex space-x-6 items-center">
+          <li *ngIf="isAdmin()">
+            <button mat-button color="accent" (click)="optRegistro()">Registro</button>
+          </li>
+          <li *ngIf="isAdmin()">
+            <button mat-button color="accent" (click)="optListado()">Listado</button>
+          </li>
+          <li>
+            <button mat-button color="accent" (click)="optTablero()">Dashboard</button>
+          </li>
+        
+          <li>
+            <button mat-button color="warn" (click)="salir()">Salir</button>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </mat-toolbar>
+  
+  <mat-menu #menu="matMenu">
+    <button mat-menu-item (click)="optTablero()">Registro</button>
+    <button mat-menu-item (click)="optTablero()">Listado</button>
+    <button mat-menu-item (click)="optTablero()">Dashboard</button>
+    
+    <button mat-menu-item color="warn" (click)="salir()">Salir</button>
+  </mat-menu>
