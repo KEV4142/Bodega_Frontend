@@ -1,9 +1,7 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { HeaderComponent } from '../../../componentes/header/header.component';
-import { Producto, ProductoRow, SalidaResponse, Sucursal } from '../salida-dto';
-import { HttpClient } from '@angular/common/http';
+import { Producto, ProductoRow, Sucursal } from '../salida-dto';
 import { RouterLink } from '@angular/router';
-import { environment } from '../../../../environments/environment';
 import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
@@ -19,6 +17,10 @@ import { MatTableModule } from '@angular/material/table';
 import { MatDialog } from '@angular/material/dialog';
 import { CuadroErrorComponent } from '../../../componentes/cuadro-error/cuadro-error.component';
 import { CuadroConfirmacionComponent } from '../../../componentes/cuadro-confirmacion/cuadro-confirmacion.component';
+import { SucursalService } from '../../../servicios/sucursal.service';
+import { ProductoService } from '../../../servicios/producto.service';
+import { LoteService } from '../../../servicios/lote.service';
+import { SalidaService } from '../../../servicios/salida.service';
 
 @Component({
   selector: 'app-crearsalidas',
@@ -52,7 +54,12 @@ export class CrearsalidasComponent implements OnInit {
     'fechaVencimiento',
   ];
 
-  constructor(private http: HttpClient, private dialog: MatDialog) {}
+  constructor(
+    private dialog: MatDialog,
+    private sucursalService: SucursalService,
+    private productoService: ProductoService  ,
+    private loteService: LoteService,
+    private salidaService: SalidaService) {}
 
   form = this.formBuilder.group({
     sucursalid: new FormControl<number | null>(null, {
@@ -71,18 +78,14 @@ export class CrearsalidasComponent implements OnInit {
     this.loadProductos();
   }
   loadSucursales(): void {
-    this.http
-      .get<Sucursal[]>(`${environment.apiUrl}sucursales/activos`)
-      .subscribe((data: Sucursal[]) => {
-        this.sucursales = data;
-      });
+    this.sucursalService.obtenerSucursalesActivas().subscribe((data: Sucursal[]) => {
+    this.sucursales = data;
+  });
   }
   loadProductos(): void {
-    this.http
-      .get<Producto[]>(`${environment.apiUrl}productos/activos`)
-      .subscribe((data: Producto[]) => {
-        this.productos = data;
-      });
+    this.productoService.obtenerProductosActivos().subscribe((data: Producto[]) => {
+    this.productos = data;
+  });
   }
   obtenerErrorCampoSucursalID() {
     let campo = this.form.controls.sucursalid;
@@ -126,11 +129,11 @@ export class CrearsalidasComponent implements OnInit {
     );
   }
   agregarProducto(): void {
-    this.http
-      .post<ProductoRow[]>(`${environment.apiUrl}lotes/disponible`, {
-        productoID: this.form.value.productoid,
-        cantidad: this.form.value.cantidad,
-      })
+    const productoID = this.form.value.productoid;
+    const cantidad = this.form.value.cantidad;
+    if (!productoID || !cantidad) return;
+
+    this.loteService.obtenerLotesDisponibles(productoID, cantidad)
       .subscribe({
         next: (data: ProductoRow[]) => {
           const nuevos = data.filter(
@@ -163,19 +166,11 @@ export class CrearsalidasComponent implements OnInit {
   }
 
   guardarCambios(): void {
+    const sucursalid = this.form.value.sucursalid;
     if (this.form.controls.sucursalid.invalid || this.productosTabla.length === 0 ) {
       return;
     }
-    const salidaData = {
-      sucursalid: this.form.value.sucursalid,
-      salidasdetalle: this.productosTabla.map((linea) => ({
-        loteid: linea.loteID,
-        cantidad: linea.cantidad,
-      })),
-    };
-    
-    this.http
-      .post<SalidaResponse>(environment.apiUrl + 'salidas/ingreso', salidaData)
+    this.salidaService.registrarSalida(sucursalid!, this.productosTabla)
       .subscribe({
         next: (response) => {
           this.dialog.open(CuadroConfirmacionComponent, {
@@ -196,6 +191,11 @@ export class CrearsalidasComponent implements OnInit {
   }
   reiniciar(): void {
     this.form.reset();
+    /* this.form.setValue({
+      sucursalid: null,
+      productoid: null,
+      cantidad: null
+    }); */
     this.productosTabla = [];
     this.sumaTotal = 0;
   }

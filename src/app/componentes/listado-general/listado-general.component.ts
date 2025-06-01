@@ -9,8 +9,6 @@ import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { PaginacionDTO } from '../interfaces/modeloPaginacion/paginacion-dto';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { HttpClient } from '@angular/common/http';
-import { environment } from '../../../environments/environment';
 import { construirQueryParams } from '../../Funciones/construirQueryParams';
 import { CuadroConsultaComponent } from '../cuadro-consulta/cuadro-consulta.component';
 import { Sucursal } from '../../Paginas/salidas/salida-dto';
@@ -19,6 +17,9 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatSelectModule } from '@angular/material/select';
 import { ReactiveFormsModule, FormsModule, FormBuilder } from '@angular/forms';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { SucursalService } from '../../servicios/sucursal.service';
+import { SalidaService } from '../../servicios/salida.service';
 
 @Component({
   selector: 'app-listado-general',
@@ -27,7 +28,8 @@ import { ReactiveFormsModule, FormsModule, FormBuilder } from '@angular/forms';
     MatNativeDateModule,
     MatInputModule,
     ReactiveFormsModule,
-    FormsModule
+    FormsModule,
+    MatCheckboxModule
   ],
   templateUrl: './listado-general.component.html',
   styles: ``
@@ -68,11 +70,10 @@ export class ListadoGeneralComponent<TDTO> implements OnInit {
 
   sucursales: Sucursal[] = [];
 
-  constructor(private dialog: MatDialog,private http: HttpClient,private snackBar: MatSnackBar) {}
+  constructor(private dialog: MatDialog,private snackBar: MatSnackBar, private sucursalService: SucursalService, private salidaService: SalidaService) {}
 
   ngOnInit(): void {
-    this.http.get<Sucursal[]>(`${environment.apiUrl}sucursales/activos`)
-          .subscribe((data: Sucursal[]) => {
+    this.sucursalService.obtenerSucursalesActivas().subscribe((data: Sucursal[]) => {
             this.sucursales = data;
           });
     if (!this.rutaBackend) {
@@ -102,9 +103,7 @@ export class ListadoGeneralComponent<TDTO> implements OnInit {
   }
   editar(id: number) {
     this.cargando = true;
-    this.http.put<TDTO>(environment.apiUrl+this.rutaBackend+'/estado/'+id , {
-      "estado": "r"
-    }).subscribe(() => {
+    this.salidaService.actualizarEstado<TDTO>(this.rutaBackend, id, 'r').subscribe(() => {
       this.cargando = false;
       this.snackBar.open('Actualizacion de Registro Exitoso.', 'Cerrar', {
         duration: 1500,
@@ -126,15 +125,7 @@ export class ListadoGeneralComponent<TDTO> implements OnInit {
   
   cargarRegistros() {
     let queryParams = construirQueryParams(this.paginacion);
-    this.http.get<
-    { 
-      currentPage: number; 
-      totalPages: number; 
-      pageSize: number; 
-      totalCount: number; 
-      items: TDTO[] 
-    }
-    >(environment.apiUrl+this.rutaBackend+'/paginacion', { params: queryParams}).subscribe((respuesta) => {
+    this.salidaService.obtenerPaginado<TDTO>(this.rutaBackend, queryParams).subscribe((respuesta) => {
       this.entidades = respuesta.items;
       this.cantidadTotalRegistros = respuesta.totalCount;
     });
@@ -151,14 +142,7 @@ export class ListadoGeneralComponent<TDTO> implements OnInit {
 
     const queryParams = construirQueryParams(filtros);
  
-    this.http.get<
-    {currentPage: number; 
-      totalPages: number; 
-      pageSize: number; 
-      totalCount: number; 
-      items: TDTO[] 
-    }
-    >(`${environment.apiUrl}${this.rutaBackend}/paginacion`, { params: queryParams })
+    this.salidaService.obtenerPaginado<TDTO>(this.rutaBackend, queryParams)
       .subscribe(respuesta => {
         this.entidades = respuesta.items;
         this.cantidadTotalRegistros = respuesta.totalCount;

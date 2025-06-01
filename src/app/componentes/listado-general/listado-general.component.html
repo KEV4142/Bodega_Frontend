@@ -63,6 +63,7 @@
                   color="warn"
                   class="ml-2"
                   aria-label="Bloquear"
+                  [disabled]="elemento['estado'] === 'R'"
                   (click)="openConfirmDialog(elemento[campoID])"
                 >
                   <mat-icon>edit</mat-icon>
