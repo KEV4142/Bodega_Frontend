@@ -45,6 +45,7 @@ export class CrearsalidasComponent implements OnInit {
   productos: Producto[] = [];
   productosTabla: ProductoRow[] = [];
   sumaTotal: number = 0;
+  productoSeleccionado: number | null = null;
   columnas: string[] = [
     'productoID',
     'descripcion',
@@ -198,5 +199,21 @@ export class CrearsalidasComponent implements OnInit {
     }); */
     this.productosTabla = [];
     this.sumaTotal = 0;
+    this.productoSeleccionado=null;
+  }
+  retirarProducto(): void {
+    if(!this.productoSeleccionado){
+      this.dialog.open(CuadroErrorComponent, {
+        data: "No se tiene seleccionado algun producto en la tabla.",
+      });
+    }
+    this.productosTabla = this.productosTabla.filter(
+      (linea) => linea.loteID !== this.productoSeleccionado
+    );
+    this.sumaTotal = this.calcularTotal();
+    this.productoSeleccionado=null;
+  }
+  seleccionarProducto(producto: ProductoRow) {
+    this.productoSeleccionado = producto.loteID;
   }
 }

@@ -63,10 +63,12 @@ export class AuthService {
   }
 
   saveToken(token: string): void {
-    sessionStorage.setItem('authToken', token);
+    localStorage.setItem('authToken', token);
+    //sessionStorage.setItem('authToken', token);
   }
   getToken(): string | null {
-    return sessionStorage.getItem('authToken');
+    // return sessionStorage.getItem('authToken');
+    return localStorage.getItem('authToken');
   }
   isAuthenticated(): boolean {
     return this.getToken() !== null;
@@ -78,6 +80,7 @@ export class AuthService {
     return this.Tipo === 'Operador';
   }
   logout(): void {
-    sessionStorage.clear();
+    // sessionStorage.clear();
+    localStorage.clear();
   }
 }

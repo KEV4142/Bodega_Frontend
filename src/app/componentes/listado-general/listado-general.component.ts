@@ -66,6 +66,8 @@ export class ListadoGeneralComponent<TDTO> implements OnInit {
     SucursalID: [''],
     FechaInicio: [null],
     FechaFinal: [null],
+    OrderBy: [''],
+    OrderAsc: [true],
   });
 
   sucursales: Sucursal[] = [];
@@ -137,7 +139,9 @@ export class ListadoGeneralComponent<TDTO> implements OnInit {
       PageSize: this.paginacion.PageSize,
       SucursalID: this.formFiltros.value.SucursalID,
       FechaInicio: this.formFiltros.value.FechaInicio,
-      FechaFinal: this.formFiltros.value.FechaFinal
+      FechaFinal: this.formFiltros.value.FechaFinal,
+      OrderBy: this.formFiltros.value.OrderBy,
+      OrderAsc: this.formFiltros.value.OrderAsc
     };
 
     const queryParams = construirQueryParams(filtros);
